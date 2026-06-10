@@ -899,7 +899,14 @@ async function loadConvFile(input) {
     const text = await file.text();
     const sep = file.name.endsWith('.tsv') ? '\t' : ',';
 
-    Papa.parse(text, {
+    // Detect Walmart settlement CSVs: first row is company name (no commas),
+    // rows 2-3 are reporting period metadata, row 4 is the real header.
+    const lines = text.split(/\r?\n/);
+    const isSettlement = !lines[0].includes(',') &&
+        ((lines[1] || '').includes('ReportingPeriod') || (lines[2] || '').includes('ReportingPeriod'));
+    const csvContent = isSettlement ? lines.slice(3).join('\n') : text;
+
+    Papa.parse(csvContent, {
         header: true,
         skipEmptyLines: true,
         delimiter: sep,
