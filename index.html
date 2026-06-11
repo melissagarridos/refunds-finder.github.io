@@ -921,6 +921,14 @@ async function loadConvFile(input) {
                     errBox.classList.add('visible');
                     return;
                 }
+                // Strip ="" Excel-escape artifacts from every cell
+                results.data = results.data.map(row => {
+                    const clean = {};
+                    for (const key of results.meta.fields) {
+                        clean[key] = stripExcel(row[key]);
+                    }
+                    return clean;
+                });
                 convData = results;
                 renderConvPreview(results);
             },
